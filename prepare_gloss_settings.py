@@ -111,10 +111,12 @@ class GlossCollector:
         fOut = open(convSettingsFname, 'w', encoding='utf-8')
         json.dump(settings, fOut, indent=4, ensure_ascii=False, sort_keys=True)
         fOut.close()
+
         fOut = open(os.path.join(self.corpusDir, 'grammRules.csv'), 'w', encoding='utf-8')
         for gloss in glossList:
             fOut.write(gloss + '\t' + gloss.lower().replace('.', ',') + '\n')
         fOut.close()
+
         fOut = open(os.path.join(self.corpusDir, 'glosses.html'), 'w', encoding='utf-8')
         fOut.write('<html><head><title>Glosses and POS for ' + self.lang + '</title></head>\n<body>')
         fOut.write('<h1>Glosses</h1>\n<table>')
@@ -124,18 +126,27 @@ class GlossCollector:
         for pos in sorted(self.posTags, key=lambda x: (-self.posTags[x], x)):
             fOut.write('<tr><td>' + pos + '</td><td>' + str(self.posTags[pos]) + '</td></tr>\n')
         fOut.close()
+
         categories = {self.lang: {}}
         for pos in self.posTags:
             categories[self.lang][pos] = 'pos'
         for gloss in glossList:
             for tag in re.split('[/.]', gloss.lower()):
+                if tag in self.posTags:
+                    continue    # do not overwrite POS tags as they are more essential for the search
                 cat = 'add'
                 if tag in self.tags2cat:
                     cat = self.tags2cat[tag]
                 categories[self.lang][tag] = cat
+
         fOut = open(os.path.join(self.corpusDir, 'categories.json'), 'w', encoding='utf-8')
         json.dump(categories, fOut, indent=4, ensure_ascii=False, sort_keys=True)
         fOut.close()
+
+        corpusSettings = {'lang_props': {self.lang:
+                                             {'gloss_shortcuts': {},
+                                              'gloss_selection': {'columns': []},
+                                              'gramm_selection': {'columns': []}}}}
 
     def run(self):
         """
