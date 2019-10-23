@@ -1,0 +1,7 @@
+**.pyc
+**.idea/**
+docs_doxygen/**
+conversion_settings.json
+categories.json
+glosses.html
+grammRules.csv
