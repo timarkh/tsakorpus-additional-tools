@@ -24,6 +24,10 @@ class GlossCollector:
         if len(ext) > 0 and not ext.startswith('.'):
             ext = '.' + ext
         self.corpusDir = corpusDir
+        self.tags2cat = {}
+        fIn = open('data/common_gramm_tags.json', 'r', encoding='utf-8')
+        self.tags2cat = json.load(fIn)
+        fIn.close()
 
     def get_glosses(self, data):
         """
@@ -125,7 +129,10 @@ class GlossCollector:
             categories[self.lang][pos] = 'pos'
         for gloss in glossList:
             for tag in re.split('[/.]', gloss.lower()):
-                categories[self.lang][tag] = 'add'
+                cat = 'add'
+                if tag in self.tags2cat:
+                    cat = self.tags2cat[tag]
+                categories[self.lang][tag] = cat
         fOut = open(os.path.join(self.corpusDir, 'categories.json'), 'w', encoding='utf-8')
         json.dump(categories, fOut, indent=4, ensure_ascii=False, sort_keys=True)
         fOut.close()
