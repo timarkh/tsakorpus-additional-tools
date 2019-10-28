@@ -107,7 +107,7 @@ class GlossCollector:
             fIn = open(convSettingsFname, 'r', encoding='utf-8')
             settings = json.load(fIn)
             fIn.close()
-        settings['glosses'] = glossList
+        settings['glosses'] = {self.lang: glossList}
         fOut = open(convSettingsFname, 'w', encoding='utf-8')
         json.dump(settings, fOut, indent=4, ensure_ascii=False, sort_keys=True)
         fOut.close()
