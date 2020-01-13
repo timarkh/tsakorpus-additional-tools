@@ -284,10 +284,54 @@ class ExmaraldaGlossCollector(GlossCollector):
         return data
 
 
+class UniparserGlossCollector(GlossCollector):
+    """
+    A subclass of GlossCollector for UniParser grammar files.
+    """
+
+    def get_glosses(self, data):
+        """
+        Return all glosses extracted from the gloss field with
+        dummy frequencies.
+        """
+        curGlosses = {}
+        for glossSet in re.findall('gloss: *([^\r\n]+)', data):
+            for gloss in glossSet.split('|'):
+                if gloss not in curGlosses:
+                    curGlosses[gloss] = 1
+                else:
+                    curGlosses[gloss] += 1
+        return curGlosses
+
+    def get_pos_tags(self, data):
+        """
+        Return all POS / gramm tags extracted from the gramm field
+        with dummy frequencies.
+        """
+        curPOS = {}
+        for grammSet in re.findall('gramm: *([^\r\n]+)', data):
+            for gramm in grammSet.split(','):
+                if gramm not in curPOS:
+                    curPOS[gramm] = 1
+                else:
+                    curPOS[gramm] += 1
+        return curPOS
+
+    def load_file(self, fname):
+        """
+        Return the contents of one corpus file.
+        Should be overriden in subclasses.
+        """
+        fIn = open(fname, 'r', encoding='utf-8')
+        data = fIn.read()
+        fIn.close()
+        return data
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Collect glosses and POS tags from a corpus and'
                                                  ' prepare tsakorpus settings files based on this list.')
-    parser.add_argument('-f', '--format', help='Corpus format (tei/exb/eaf)',
+    parser.add_argument('-f', '--format', help='Corpus/grammar format (tei/exb/eaf/uniparser)',
                         default='tei')
     parser.add_argument('-l', '--lang', help='Language name',
                         default='')
@@ -312,5 +356,12 @@ if __name__ == '__main__':
                                      corpusDir=args.dir,
                                      ext='exb')
         gc.run()
+    elif args.format == 'uniparser':
+        gc = UniparserGlossCollector(posTierType='',
+                                     glossTierType='',
+                                     lang=args.lang,
+                                     corpusDir=args.dir,
+                                     ext='txt')
+        gc.run()
     else:
-        print('Only ISO/TEI xml and EXMARaLDA exb are supported at the moment.')
+        print('Only ISO/TEI xml, EXMARaLDA exb and UniParser grammars are supported at the moment.')
